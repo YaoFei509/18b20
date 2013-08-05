@@ -1,3 +1,11 @@
+/*****************************************************
+ *  温度测量
+ *  
+ *  STC89C52 DS18B20@P3.7
+ *  9600,n,8,1
+ *
+ *  Yao Fei  feiyao@me.com
+ */
 #include <8052.h>
 #include <stdio.h>
 
@@ -11,11 +19,22 @@ __sfr AUXR  = 0x8E;
 typedef unsigned char uchar;
 typedef unsigned char BYTE;
 
-BYTE  flag;
+BYTE  flag;   // 是否采样标志
 
-unsigned char const __data hexs[] = "0123456789ABCDEF";
+char const hexs[] = "0123456789ABCDEF";
 
+// 小数部分
+char* const digis[16]= {"0", "06", "13", "19", 
+			"25", "31", "38", "44", 
+			"5",  "56", "63", "69",
+			"75", "81", "88", "94"};
+
+// for Keil C compatible
 #define __nop__    __asm  nop __endasm
+
+#define FOSC  11059200
+#define HZ    100
+#define T0MS  (65536 - FOSC/12/HZ)
 
 void init_uart()
 {
@@ -25,7 +44,7 @@ void init_uart()
 
 	SCON  = 0x50;  // SCON mode 1, 8bit enable ucvr
 //	TMOD |= 0x20;  // timer1, mode 2, 8bit reload
-
+	               // timer0, mode 1, 16bit timer
 	TMOD |= 0x21;
 
 	PCON |= 0x00;  // SMOD =1 
@@ -69,15 +88,14 @@ void serial() __interrupt 4 __using 3
 BYTE t0count =0;
 void timer0() __interrupt 1 __using 2
 {
-
 	TR0 = 0;
-	TL0 = 0;
-	TH0 = 0x4C;
+	TL0 = T0MS;
+	TH0 = T0MS>>8;
 	TR0 = 1;
 	
 	t0count++;
 	
-	if( 20 == t0count) {
+	if( HZ == t0count) {
 		flag = 0x55;
 		t0count = 0;
 	}
@@ -194,20 +212,23 @@ void DS18B20_WriteByte(BYTE dat)
 int main()
 {
 	unsigned int read_temp;
-	BYTE h;
-	int  l;
-	int count=0;
+	char h, l;
+	unsigned int count=0;
 
 	init_uart();
 
 	while(1) {
 		if (flag) {
 			flag = 0;
-			read_temp = ReadTemp();
+			read_temp = ReadTemp();			
+			h = (TPH<<4) + ((TPL>>4) & 0x0f);
 			
-			l = (int)(TPL & 0x0f)*625;
-			h = TPL/16 + TPH*16;
-			printf("%d\t%d.%04d\n\r", count++,  h, l);
+			if (h<0) 
+				l = 16 - (TPL&0xf);
+			else
+				l = TPL&0xf;
+			
+			printf("%u\t%d.%s\n\r", count++,  h, digis[l]);
 		}
 	}
 }		
