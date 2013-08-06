@@ -84,7 +84,7 @@ void print_num(unsigned char dat)
 int main()
 {
 	char h, l;
-	unsigned char count=0;
+	uchar hour=0, minu=0, sec=0; //Ê±·ÖÃë
 
 	init_timer();
 
@@ -101,7 +101,11 @@ int main()
 			else
 				l = digis[TPL&0xf];
 			
-			print_num(count++);
+			print_num(hour);
+			putchar(':');
+			print_num(minu);
+			putchar(':');
+			print_num(sec);
 			putchar('\t');
 			
 			if (h<0) {
@@ -114,6 +118,17 @@ int main()
 			print_num(l);
 			putchar('\n');
 			putchar('\r');
+
+			// update h:m:s
+			if (60 == sec++) {
+				sec = 0;
+				if (60 == minu++) {
+					minu = 0;
+					if (24 == hour++) { 
+						hour = 0;
+					}
+				}
+			}
 		}
 	}
 }
