@@ -6,29 +6,18 @@
  *
  *  Yao Fei  feiyao@me.com
  */
-#include <8052.h>
-#include <stdio.h>
-
-#define __STC89C52
-
-#ifdef __STC89C52
-// for STC 89C52RD
-__sfr AUXR  = 0x8E;
-#endif
+#include <stc12.h>
 
 typedef unsigned char uchar;
 typedef unsigned char BYTE;
 
-BYTE  flag;   // 是否采样标志
-
-char const hexs[] = "0123456789ABCDEF";
+uchar flag;   // 是否采样标志
 
 // 小数部分
-char* const digis[16]= {"0", "06", "13", "19", 
-			"25", "31", "38", "44", 
-			"5",  "56", "63", "69",
-			"75", "81", "88", "94"};
-
+char const __code digis[16]= {0, 6, 13, 19, 
+			      25, 31, 38, 44, 
+			      50, 56, 63, 69,
+			      75, 81, 88, 94};
 // for Keil C compatible
 #define __nop__    __asm  nop __endasm
 
@@ -36,11 +25,10 @@ char* const digis[16]= {"0", "06", "13", "19",
 #define HZ    100
 #define T0MS  (65536 - FOSC/12/HZ)
 
+// 初始化串口和定时器
 void init_uart()
 {
-#ifdef __STC89C52
 	AUXR = 0;
-#endif
 
 	SCON  = 0x50;  // SCON mode 1, 8bit enable ucvr
 //	TMOD |= 0x20;  // timer1, mode 2, 8bit reload
@@ -50,7 +38,7 @@ void init_uart()
 	PCON |= 0x00;  // SMOD =1 
 
 	TH1   = 0xFD;  // 9600
-	TL1   = 0xFD;  //9600 
+	TL1   = 0xFD;  // 9600 
 	TR1   = 1;
 
 	TR0   = 1;
@@ -92,10 +80,8 @@ void timer0() __interrupt 1 __using 2
 	TL0 = T0MS;
 	TH0 = T0MS>>8;
 	TR0 = 1;
-	
-	t0count++;
-	
-	if( HZ == t0count) {
+
+	if( HZ == t0count++) {
 		flag = 0x55;
 		t0count = 0;
 	}
@@ -104,17 +90,15 @@ void timer0() __interrupt 1 __using 2
 // -------------------   DS18B20  --------------------------
 #define DQ P3_7
 
-BYTE TPH, TPL;
+uchar TPH, TPL;
 
 void DelayXus(BYTE n);
 void DS18B20_Reset();
 void DS18B20_WriteByte(BYTE dat);
 BYTE DS18B20_ReadByte();
 
-unsigned int ReadTemp()
+void ReadTemp()
 {
-	unsigned int v;
-	
 	DS18B20_Reset();                //设备复位
 	DS18B20_WriteByte(0xCC);        //跳过ROM命令
 	DS18B20_WriteByte(0x44);        //开始转换命令
@@ -125,9 +109,6 @@ unsigned int ReadTemp()
 	DS18B20_WriteByte(0xBE);        //读暂存存储器命令
 	TPL = DS18B20_ReadByte();       //读温度低字节
 	TPH = DS18B20_ReadByte();       //读温度高字节
-
-	v = TPH*256+TPL;
-	return v;
 }
 
 /**************************************
@@ -169,8 +150,7 @@ BYTE DS18B20_ReadByte()
 	BYTE i;
 	BYTE dat = 0;
 
-	for (i=0; i<8; i++)             //8位计数器
-	{
+	for (i=0; i<8; i++) {              //8位计数器
 		dat >>= 1;
 		DQ = 0;                     //开始时间片
 		__nop__;                    //延时等待
@@ -192,8 +172,7 @@ void DS18B20_WriteByte(BYTE dat)
 {
 	char i;
 
-	for (i=0; i<8; i++)             //8位计数器
-	{
+	for (i=0; i<8; i++) {             //8位计数器
 		DQ = 0;                     //开始时间片
 		__nop__;                    //延时等待
 		__nop__;
@@ -204,31 +183,87 @@ void DS18B20_WriteByte(BYTE dat)
 	}
 }
 
+// 打印十进制数字
+void print_num(unsigned char dat)
+{
+	char i;
+
+	for (i=0;i<3;i++) {
+		if (dat < 100) 
+			break;
+		dat -= 100;
+	}
+
+	if (i) 
+		putchar('0'+i);
+
+	for (i=0;i<10;i++) {
+		if (dat < 10) 
+			break;
+		dat -= 10;
+	}
+
+	putchar('0'+i);
+	putchar('0'+dat);
+}
+
 
 /*
  *
  */
+/*
+ * 主程序
+ */
 
 int main()
 {
-	unsigned int read_temp;
 	char h, l;
-	unsigned int count=0;
+	uchar hour=0, minu=0, sec=0; //时分秒
 
 	init_uart();
 
 	while(1) {
 		if (flag) {
+			P1_7 = !P1_7; // for test
 			flag = 0;
-			read_temp = ReadTemp();			
+			ReadTemp();
+
 			h = (TPH<<4) + ((TPL>>4) & 0x0f);
 			
 			if (h<0) 
-				l = 16 - (TPL&0xf);
+				l = digis[16 - (TPL&0xf)];
 			else
-				l = TPL&0xf;
+				l = digis[TPL&0xf];
 			
-			printf("%u\t%d.%s\n\r", count++,  h, digis[l]);
+			print_num(hour);
+			putchar(':');
+			print_num(minu);
+			putchar(':');
+			print_num(sec);
+			putchar('\t');
+			
+			if (h<0) {
+				putchar('-');
+				h = -h;
+			}
+			print_num(h);
+			
+			putchar('.');
+			print_num(l);
+			putchar('\n');
+			putchar('\r');
+
+			// update h:m:s
+			if (60 == sec++) {
+				sec = 0;
+				if (60 == minu++) {
+					minu = 0;
+					if (24 == hour++) { 
+						hour = 0;
+					}
+				}
+			}
 		}
 	}
-}		
+}
+
