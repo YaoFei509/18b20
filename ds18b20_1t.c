@@ -1,18 +1,12 @@
 /**************************************
-;WWW.STCMCU.COM
-;Mobile:13922805190
-;0755-82948412
-温度传感器DS18B20测试程序
-主芯片  : STC12C5A60S2 (1T)
-工作频率: 12.000MHz
-**************************************/
-
+ *温度传感器DS18B20测试程序
+ *主芯片  : STC12C5A60S2 (1T)
+ *工作频率: 12.000MHz
+ **************************************/
 #include "ds18b20_1t.h"
 
-int  ReadTemp()
+void ReadTemp()
 {
-	int t;
-
 	DS18B20_Reset();                //设备复位
 	DS18B20_WriteByte(0xCC);        //跳过ROM命令
 	DS18B20_WriteByte(0x44);        //开始转换命令
@@ -23,10 +17,6 @@ int  ReadTemp()
 	DS18B20_WriteByte(0xBE);        //读暂存存储器命令
 	TPL = DS18B20_ReadByte();       //读温度低字节
 	TPH = DS18B20_ReadByte();       //读温度高字节
-
-	t = TPH*256 + TPL;
-
-	return t;
 }
 
 /**************************************
