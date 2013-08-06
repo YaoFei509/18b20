@@ -2,7 +2,7 @@
 #
 #  温度探头
 #
-CC=sdcc -mmcs51
+CC=sdcc
 
 # for STC15F104E
 STC15FLAGS =  --iram-size 128 --no-xinit-opt 
@@ -30,5 +30,5 @@ ds18b20_1t.rel: ds18b20_1t.c
 	$(CC) $(STC15FLAGS) -c $<
 
 clean:
-	-rm -f *.ihx *.asm *.lnk *.lst *.map *.mem *.rel *.o  *.sym *.rst *~ *.lk *.bin
+	-rm -f *.ihx *.hex *.asm *.lnk *.lst *.map *.mem *.rel *.o  *.sym *.rst *~ *.lk *.bin
 
