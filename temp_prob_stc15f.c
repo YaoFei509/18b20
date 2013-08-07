@@ -40,7 +40,6 @@ void init_timer()
 	TH0   = T0MS >> 8; 
 	TR0   = 1;
 	ET0   = 1;
-//	TF0   = 0;
 	EA    = 1;
 }
 
@@ -117,7 +116,6 @@ int main()
 			putchar('.');
 			print_num(l);
 			putchar('\n');
-			putchar('\r');
 
 			// update h:m:s
 			if (60 == sec++) {

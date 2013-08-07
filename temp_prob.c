@@ -251,7 +251,6 @@ int main()
 			putchar('.');
 			print_num(l);
 			putchar('\n');
-			putchar('\r');
 
 			// update h:m:s
 			if (60 == sec++) {
