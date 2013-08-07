@@ -9,7 +9,6 @@
 #include <stc12.h>
 
 typedef unsigned char uchar;
-typedef unsigned char BYTE;
 
 uchar flag;   // 是否采样标志
 
@@ -59,7 +58,7 @@ void putchar(char c)
 // UART interrupt handler
 void serial() __interrupt 4 __using 3
 {
-	BYTE c;
+	uchar c;
 	
 	if (RI) {
 		c = SBUF;
@@ -73,7 +72,7 @@ void serial() __interrupt 4 __using 3
 }
 
 // Timer 0 handler
-BYTE t0count =0;
+uchar t0count =0;
 void timer0() __interrupt 1 __using 2
 {
 	TR0 = 0;
@@ -85,6 +84,8 @@ void timer0() __interrupt 1 __using 2
 		flag = 0x55;
 		t0count = 0;
 	}
+
+	P1_7 = !P1_7; // for test
 }
 
 // -------------------   DS18B20  --------------------------
@@ -92,10 +93,10 @@ void timer0() __interrupt 1 __using 2
 
 uchar TPH, TPL;
 
-void DelayXus(BYTE n);
+void DelayXus(uchar n);
 void DS18B20_Reset();
-void DS18B20_WriteByte(BYTE dat);
-BYTE DS18B20_ReadByte();
+void DS18B20_WriteByte(uchar dat);
+uchar DS18B20_ReadByte();
 
 void ReadTemp()
 {
@@ -116,7 +117,7 @@ void ReadTemp()
 不同的工作环境,需要调整此函数
 当改用1T的MCU时,请调整此延时函数
 **************************************/
-void DelayX0us(BYTE n)
+void DelayX0us(uchar n)
 {
 	while (n--)
 	{
@@ -133,6 +134,8 @@ void DS18B20_Reset()
 	CY = 1;
 	while (CY)
 	{
+		DQ = 1;
+		DelayX0us(2);
 		DQ = 0;                     //送出低电平复位信号
 		DelayX0us(48);              //延时至少480us
 		DQ = 1;                     //释放数据线
@@ -145,10 +148,10 @@ void DS18B20_Reset()
 /**************************************
 从DS18B20读1字节数据
 **************************************/
-BYTE DS18B20_ReadByte()
+uchar DS18B20_ReadByte()
 {
-	BYTE i;
-	BYTE dat = 0;
+	uchar i;
+	uchar dat = 0;
 
 	for (i=0; i<8; i++) {              //8位计数器
 		dat >>= 1;
@@ -168,7 +171,7 @@ BYTE DS18B20_ReadByte()
 /**************************************
 向DS18B20写1字节数据
 **************************************/
-void DS18B20_WriteByte(BYTE dat)
+void DS18B20_WriteByte(uchar dat)
 {
 	char i;
 
@@ -224,7 +227,7 @@ int main()
 
 	while(1) {
 		if (flag) {
-			P1_7 = !P1_7; // for test
+
 			flag = 0;
 			ReadTemp();
 
@@ -253,11 +256,11 @@ int main()
 			putchar('\n');
 
 			// update h:m:s
-			if (60 == sec++) {
+			if (59 == sec++) {
 				sec = 0;
-				if (60 == minu++) {
+				if (59 == minu++) {
 					minu = 0;
-					if (24 == hour++) { 
+					if (23 == hour++) { 
 						hour = 0;
 					}
 				}
