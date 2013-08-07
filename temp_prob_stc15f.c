@@ -118,11 +118,11 @@ int main()
 			putchar('\n');
 
 			// update h:m:s
-			if (60 == sec++) {
+			if (59 == sec++) {
 				sec = 0;
-				if (60 == minu++) {
+				if (59 == minu++) {
 					minu = 0;
-					if (24 == hour++) { 
+					if (23 == hour++) { 
 						hour = 0;
 					}
 				}
