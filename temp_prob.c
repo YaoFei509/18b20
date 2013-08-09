@@ -80,7 +80,8 @@ void timer0() __interrupt 1 __using 2
 	TH0 = T0MS>>8;
 	TR0 = 1;
 
-	if( HZ == t0count++) {
+	t0count++;
+	if( HZ == t0count) {
 		flag = 0x55;
 		t0count = 0;
 	}

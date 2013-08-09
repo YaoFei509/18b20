@@ -46,7 +46,8 @@ void init_timer()
 char  times = 0;
 void timer0_handler() __interrupt 1  __using 2
 {
-	if (HZ == times++) {
+	times++;
+	if (HZ == times) {
 		flag = 0x55;
 		times = 0;
 	}
