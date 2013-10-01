@@ -2,7 +2,9 @@
 #
 #  温度探头
 #
-CC=sdcc
+PREFIX=sdcc-
+CC=$(PREFIX)sdcc
+PACKIHX=$(PREFIX)packihx
 
 # for STC15F104E
 STC15FLAGS =  --iram-size 128 --no-xinit-opt 
@@ -11,14 +13,14 @@ all: temp_prob.ihx  temp_prob_stc15f.ihx
 
 temp_prob.ihx:	temp_prob.c
 	$(CC) $<
-	packihx $@ > temp_prob.hex
+	$(PACKIHX) $@ > temp_prob.hex
 
 downld: temp_prob.ihx
 	stcisp -f $<
 
 temp_prob_stc15f.ihx: temp_prob_stc15f.rel soft_uart.rel ds18b20_1t.rel
 	$(CC) $(STC15FLAGS) -o $@ $^
-	packihx $@ > temp_prob_stc15f.hex
+	$(PACKIHX) $@ > temp_prob_stc15f.hex
 
 temp_prob_stc15f.rel: temp_prob_stc15f.c
 	$(CC) $(STC15FLAGS) -c $<
