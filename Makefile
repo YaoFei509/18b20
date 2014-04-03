@@ -2,7 +2,7 @@
 #
 #  温度探头
 #
-PREFIX=sdcc-
+PREFIX=
 CC=$(PREFIX)sdcc
 PACKIHX=$(PREFIX)packihx
 
