@@ -27,6 +27,9 @@ char const __code digis[16]= {0, 6, 13, 19,
 			      50, 56, 63, 69,
 			      75, 81, 88, 94};
 
+// software wall
+char const __code __at(0x1ffd) wall[3] = {0x20, 0, 0};
+
 // 定时器0，产生10ms中断，100次即为1s
 #define FOSC  11059200
 #define HZ    100
