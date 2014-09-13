@@ -2,6 +2,9 @@
 #
 #  温度探头
 #
+#  姚飞
+#
+
 PREFIX=
 CC=$(PREFIX)sdcc
 PACKIHX=$(PREFIX)packihx
