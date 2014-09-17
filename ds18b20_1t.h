@@ -2,9 +2,9 @@
 ;WWW.STCMCU.COM
 ;Mobile:13922805190
 ;0755-82948412
-ÎÂ¶È´«¸ĞÆ÷DS18B20²âÊÔ³ÌĞò
-Ö÷Ğ¾Æ¬  : STC12C5A60S2 (1T)
-¹¤×÷ÆµÂÊ: 12.000MHz
+æ¸©åº¦ä¼ æ„Ÿå™¨DS18B20æµ‹è¯•ç¨‹åº
+ä¸»èŠ¯ç‰‡  : STC12C5A60S2 (1T)
+å·¥ä½œé¢‘ç‡: 12.000MHz
 **************************************/
 
 #ifndef __DS18B20_1T_H
@@ -14,9 +14,9 @@
 
 typedef unsigned char BYTE;
 
-#define DQ P3_3                    /*DS18B20µÄÊı¾İ¿ÚÎ»P3.3*/
-extern BYTE TPH;                   //´æ·ÅÎÂ¶ÈÖµµÄ¸ß×Ö½Ú
-extern BYTE TPL;                   //´æ·ÅÎÂ¶ÈÖµµÄµÍ×Ö½Ú
+#define DQ P3_3                    /*DS18B20çš„æ•°æ®å£ä½P3.3*/
+extern BYTE TPH;                   //å­˜æ”¾æ¸©åº¦å€¼çš„é«˜å­—èŠ‚
+extern BYTE TPL;                   //å­˜æ”¾æ¸©åº¦å€¼çš„ä½å­—èŠ‚
 
 // for Keil C compatible
 #define __nop__    __asm  nop __endasm
