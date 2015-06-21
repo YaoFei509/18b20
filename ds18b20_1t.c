@@ -1,25 +1,39 @@
 /**************************************
  * 
  * 温度传感器DS18B20测试程序
- * 主芯片  : STC12C5A60S2 (1T)
- * 工作频率: 12.000MHz
+ * 主芯片  : STC11F04E(1T)
+ * 工作频率: 5.66MHz
  *
  **************************************/
 #include "ds18b20_1t.h"
 
+// 检测并启动DS18B20转换
+// 返回0: 存在并已经启动
+//     1: 不存在DS18B20
+BYTE StartDS18B20()
+{
+	if (DS18B20_Reset() == 0) {
+		DS18B20_WriteByte(0xCC);        //跳过ROM命令
+		DS18B20_WriteByte(0x44);        //开始转换命令
+	} else {
+		return 1;
+	}
+
+	return 0;
+}
+
+// 读取测温值
 void ReadTemp()
 {
-	DS18B20_Reset();                //设备复位
-	DS18B20_WriteByte(0xCC);        //跳过ROM命令
-	DS18B20_WriteByte(0x44);        //开始转换命令
 	while (!DQ);                    //等待转换完成
-
 	DS18B20_Reset();                //设备复位
 	DS18B20_WriteByte(0xCC);        //跳过ROM命令
 	DS18B20_WriteByte(0xBE);        //读暂存存储器命令
 	TPL = DS18B20_ReadByte();       //读温度低字节
 	TPH = DS18B20_ReadByte();       //读温度高字节
 }
+
+//----------------------  工具函数 -------------------------
 
 /**************************************
 延时X微秒(STC12C5A60S2@12M)
@@ -30,26 +44,36 @@ void DelayXus(BYTE n)
 {
     while (n--) {
         __nop__;
+#ifndef STC11F04E
         __nop__;
+#endif
     }
 }
 
 /**************************************
 复位DS18B20,并检测设备是否存在
 **************************************/
-void DS18B20_Reset()
+BYTE DS18B20_Reset()
 {
-    CY = 1;
-    while (CY) {
-        DQ = 0;                     //送出低电平复位信号
-        DelayXus(240);              //延时至少480us
-        DelayXus(240);
-        DQ = 1;                     //释放数据线
-        DelayXus(60);               //等待60us
-        CY = DQ;                    //检测存在脉冲
-        DelayXus(240);              //等待设备释放数据线
-        DelayXus(180);
-    }
+	BYTE i=0;
+	BYTE CY = 1;
+
+	while (CY && (i<100)) {
+		DQ = 0;                     //送出低电平复位信号
+		DelayXus(240);              //延时至少480us
+		DelayXus(240);
+		DQ = 1;                     //释放数据线
+		DelayXus(60);               //等待60us
+		CY = DQ;                    //检测存在脉冲
+		DelayXus(240);              //等待设备释放数据线
+		DelayXus(180);
+		i++;
+	}
+
+	if (100 == i )
+		return 1;
+	else
+		return 0;  //found
 }
 
 /**************************************

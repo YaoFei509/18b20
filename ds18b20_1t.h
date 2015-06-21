@@ -22,8 +22,9 @@ extern BYTE TPL;                   //存放温度值的低字节
 #define __nop__    __asm  nop __endasm
 
 //------------------------------------------------------
+BYTE StartDS18B20();
 void DelayXus(BYTE n);
-void DS18B20_Reset();
+BYTE DS18B20_Reset();
 void DS18B20_WriteByte(BYTE dat);
 BYTE DS18B20_ReadByte();
 
