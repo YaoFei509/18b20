@@ -27,7 +27,7 @@ void DelayXus(BYTE n);
 BYTE DS18B20_Reset();
 void DS18B20_WriteByte(BYTE dat);
 BYTE DS18B20_ReadByte();
-
+BYTE DS18B20_ReadRom(BYTE *rom);
 // return value in TPH TPL
 // Yao Fei
 void ReadTemp();

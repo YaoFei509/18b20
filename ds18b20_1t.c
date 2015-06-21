@@ -116,3 +116,18 @@ void DS18B20_WriteByte(BYTE dat)
         DelayXus(1);                //恢复延时
     }
 }
+
+/*********************************************************
+ *功能:读序列
+ **参数：无返回
+ *********************************************************/
+BYTE DS18B20_ReadRom(BYTE *rom)
+{
+	BYTE i;
+	DS18B20_Reset(); 
+	DS18B20_WriteByte(0x33); //ds18b20_writecommand(0x33);
+	for (i = 8; i > 0; i--) {
+		rom[i - 1] = DS18B20_ReadByte();//ds18b20_readdata();
+	}
+	return 0;
+}
