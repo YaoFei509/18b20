@@ -68,6 +68,7 @@ char const __code digis[16]= {0, 6, 13, 19,
 
 // 采集到的温度
 uchar TPH, TPL;
+uchar rom[8];
 
 // 初始化串口和定时器
 void init_uart()
@@ -104,6 +105,8 @@ void putchar(char c)
 	};
 	TI = 0;
 }
+
+char* const __code  hexchar="023456789ABCDEF";
 
 // UART interrupt handler
 void serial() __interrupt 4 __using 3
@@ -164,10 +167,17 @@ void print_num(unsigned char dat)
 	putchar('0'+dat);
 }
 
+// 打印16进制数据
+void print_hex(char data)
+{
+	putchar(hexchar[(data >> 4) & 0x0f]);
+	putchar(hexchar[data & 0x0f]);
+}
+
+
 /*
  * 主程序
  */
-
 int main()
 {
 	char h, l;
@@ -175,6 +185,10 @@ int main()
 
 	init_uart();
 
+	if (0 == StartDS18B20()) {
+		DS18B20_ReadRom(rom);
+	}
+	
 	while(1) {
 		// 恶心的前后台，中断触发标志
 		if (flag) {
@@ -209,6 +223,17 @@ int main()
 				
 				putchar('.');
 				print_num(l);
+
+				putchar('\t');
+				
+				// print ROM
+				for (l=0; l<8; l++) {
+					print_hex(rom[l]);
+					if (7==l)
+						putchar('\t');
+					else
+						putchar(':');
+				}
 			}
 			
 			putchar('\n');
