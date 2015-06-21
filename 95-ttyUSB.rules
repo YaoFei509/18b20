@@ -1,0 +1,1 @@
+SUBSYSTEM=="tty", ACTION=="add", KERNEL=="ttyUSB*|ttyACM*", MODE="0666"
