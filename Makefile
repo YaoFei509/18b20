@@ -4,12 +4,17 @@
 #  姚飞
 #
 
+#for Fedora use 
+#REFIX=sdcc-
+
 PREFIX=
+
+#
 CC=$(PREFIX)sdcc
 PACKIHX=$(PREFIX)packihx
 
 # for STC11F04E
-STC11FLAGS = -DSTC11F04E
+STC11FLAGS = -DSTC11F04E=1
 
 # for STC15F104E
 STC15FLAGS =  --iram-size 128 --no-xinit-opt 
@@ -20,7 +25,7 @@ temp_prob.ihx:	temp_prob.rel ds18b20.rel
 	$(CC) $^
 	$(PACKIHX) $@ > temp_prob.hex
 
-temp_prob_11f04e.ihx: temp_prob_11.rel ds18b20_1t.rel
+temp_prob_11f04e.ihx: temp_prob_11.rel ds18b20_1t_11.rel
 	$(CC) $(STC11FLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_11f04e.hex
 
@@ -48,6 +53,9 @@ ds18b20.rel: ds18b20.c
 
 ds18b20_1t.rel: ds18b20_1t.c
 	$(CC) $(STC15FLAGS) -c $<
+
+ds18b20_1t_11.rel: ds18b20_1t.c
+	$(CC) -o $@ $(STC11FLAGS) -c $<
 
 clean:
 	-rm -f *.ihx *.hex *.asm *.lnk *.lst *.map *.mem *.rel *.o  *.sym *.rst *~ *.lk *.bin
