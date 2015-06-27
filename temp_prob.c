@@ -68,7 +68,7 @@ char const __code digis[16]= {0, 6, 13, 19,
 
 // 采集到的温度
 uchar TPH, TPL;
-uchar rom[8];
+uchar rom[4][8];  //Max 4 DS18B20
 
 // 初始化串口和定时器
 void init_uart()
@@ -186,7 +186,7 @@ int main()
 	init_uart();
 
 	if (0 == StartDS18B20()) {
-		DS18B20_ReadRom(rom);
+		DS18B20_ReadRom(rom[0]);
 	}
 	
 	while(1) {
@@ -205,7 +205,7 @@ int main()
 			putchar('\t');
 
 			if (h==0) {
-				ReadTemp();
+				ReadTemp(rom[0]);
 				
 				h = (TPH<<4) + ((TPL>>4) & 0x0f);
 				
@@ -228,7 +228,7 @@ int main()
 				
 				// print ROM
 				for (l=0; l<8; l++) {
-					print_hex(rom[l]);
+					print_hex(rom[0][l]);
 					if (7==l)
 						putchar('\t');
 					else

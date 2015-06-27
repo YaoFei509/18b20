@@ -47,7 +47,7 @@ typedef unsigned char uchar;
 
 // 记录温度数据
 uchar TPH, TPL;
-uchar rom[16];
+uchar ROM[4][8];  // max 4 DS18B20
 
 uchar flag;   // 定时采样标志
 
@@ -132,7 +132,7 @@ int main()
 	init_timer();
 
 	if (0 == StartDS18B20()) {
-		DS18B20_ReadRom(rom);
+		DS18B20_ReadRom(ROM[0]);
 	}
 	
 	while(1) {
@@ -151,7 +151,7 @@ int main()
 			putchar('\t');
 
 			if (0 ==h) {
-				ReadTemp();
+				ReadTemp(ROM[0]);
 				
 				h = (TPH<<4) + ((TPL>>4) & 0x0f);
 				
@@ -171,7 +171,7 @@ int main()
 								
 				// print ROM
 				for (l=0; l<8; l++) {
-					print_hex(rom[l]);
+					print_hex(ROM[0][l]);
 					if (7==l)
 						putchar('\t');
 					else
