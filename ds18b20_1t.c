@@ -7,6 +7,19 @@
  **************************************/
 #include "ds18b20_1t.h"
 
+//---------------------------------------------------------------
+// 延时时间
+#ifdef STC11F04E
+// 22 = 64us 24 = 70us
+#define US60 24
+#else
+#define US60 60
+#endif
+
+#define US240 (4*US60)
+#define US180 (3*US60)
+//---------------------------------------------------------------
+
 // 检测并启动DS18B20转换
 // 返回0: 存在并已经启动
 //     1: 不存在DS18B20
@@ -23,11 +36,21 @@ BYTE StartDS18B20()
 }
 
 // 读取测温值
-void ReadTemp()
+void ReadTemp(BYTE *rom)
 {
+	int i;
+	
 	while (!DQ);                    //等待转换完成
 	DS18B20_Reset();                //设备复位
-	DS18B20_WriteByte(0xCC);        //跳过ROM命令
+
+	if (rom == 0) {
+		DS18B20_WriteByte(0xCC);        //跳过ROM命令
+	} else {
+		DS18B20_WriteByte(0x55);    // match rom
+		for (i=0;i<8;i++) {
+			DS18B20_WriteByte(rom[i]);
+		}
+	}
 	DS18B20_WriteByte(0xBE);        //读暂存存储器命令
 	TPL = DS18B20_ReadByte();       //读温度低字节
 	TPH = DS18B20_ReadByte();       //读温度高字节
@@ -44,11 +67,10 @@ void DelayXus(BYTE n)
 {
     while (n--) {
         __nop__;
-#ifndef STC11F04E
         __nop__;
-#endif
     }
 }
+
 
 /**************************************
 复位DS18B20,并检测设备是否存在
@@ -60,13 +82,13 @@ BYTE DS18B20_Reset()
 
 	while (CY && (i<100)) {
 		DQ = 0;                     //送出低电平复位信号
-		DelayXus(240);              //延时至少480us
-		DelayXus(240);
+		DelayXus(US240);            //延时至少480us
+		DelayXus(US240);
 		DQ = 1;                     //释放数据线
-		DelayXus(60);               //等待60us
+		DelayXus(US60);               //等待60us
 		CY = DQ;                    //检测存在脉冲
-		DelayXus(240);              //等待设备释放数据线
-		DelayXus(180);
+		DelayXus(US240);              //等待设备释放数据线
+		DelayXus(US180);
 		i++;
 	}
 
@@ -93,7 +115,7 @@ BYTE DS18B20_ReadByte()
         if (DQ) {
 		dat |= 0x80;        //读取数据
 	}
-        DelayXus(60);               //等待时间片结束
+        DelayXus(US60);               //等待时间片结束
     }
 
     return dat;
@@ -111,7 +133,7 @@ void DS18B20_WriteByte(BYTE dat)
         DelayXus(1);                //延时等待
         dat >>= 1;                  //送出数据
         DQ = CY;
-        DelayXus(60);               //等待时间片结束
+        DelayXus(US60);               //等待时间片结束
         DQ = 1;                     //恢复数据线
         DelayXus(1);                //恢复延时
     }
@@ -125,9 +147,9 @@ BYTE DS18B20_ReadRom(BYTE *rom)
 {
 	BYTE i;
 	DS18B20_Reset(); 
-	DS18B20_WriteByte(0x33); //ds18b20_writecommand(0x33);
-	for (i = 8; i > 0; i--) {
-		rom[i - 1] = DS18B20_ReadByte();//ds18b20_readdata();
+	DS18B20_WriteByte(0x33); //Read ROM
+	for (i=0; i<8; i++) {
+		rom[i] = DS18B20_ReadByte();
 	}
 	return 0;
 }

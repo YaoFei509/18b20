@@ -30,5 +30,5 @@ BYTE DS18B20_ReadByte();
 BYTE DS18B20_ReadRom(BYTE *);
 // return value in TPH TPL
 // Yao Fei
-void ReadTemp();
+void ReadTemp(BYTE *rom);
 #endif
