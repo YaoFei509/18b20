@@ -19,7 +19,10 @@ STC11FLAGS = -DSTC11F04E=1
 # for STC15F104E
 STC15FLAGS =  --iram-size 128 --no-xinit-opt 
 
-all: temp_prob.ihx  temp_prob_11f04e.ihx  temp_prob_stc15f.ihx
+＃for STC15W204S
+STC15W204SFLAGS = -DSTC15W204S=1 
+
+all: temp_prob.ihx  temp_prob_11f04e.ihx  temp_prob_15w204s.ihx temp_prob_stc15f.ihx
 
 temp_prob.ihx:	temp_prob.rel ds18b20.rel
 	$(CC) $^
@@ -28,6 +31,10 @@ temp_prob.ihx:	temp_prob.rel ds18b20.rel
 temp_prob_11f04e.ihx: temp_prob_11.rel ds18b20_1t_11.rel
 	$(CC) $(STC11FLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_11f04e.hex
+
+temp_prob_15w204s.ihx: temp_prob_15w204.rels ds18b20_1t.rel
+	$(CC) $(STC11FLAGS) -o $@ $^
+	$(PACKIHX) $@ > temp_prob_15w204s.hex
 
 downld: temp_prob.ihx
 	stcisp -f $<
@@ -41,6 +48,10 @@ temp_prob.rel: temp_prob.c
 
 temp_prob_11.rel: temp_prob.c
 	$(CC) $(STC11FLAGS) -o $@ -c $<
+
+temp_prob_15w204s.rel: temp_prob.c
+	$(CC) $(STC15W204SFLAGS) -o $@ -c $<
+
 
 temp_prob_stc15f.rel: temp_prob_stc15f.c
 	$(CC) $(STC15FLAGS) -c $<
