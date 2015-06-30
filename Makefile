@@ -19,7 +19,7 @@ STC11FLAGS = -DSTC11F04E=1
 # for STC15F104E
 STC15FLAGS =  --iram-size 128 --no-xinit-opt 
 
-＃for STC15W204S
+#for STC15W204S
 STC15W204SFLAGS = -DSTC15W204S=1 
 
 all: temp_prob.ihx  temp_prob_11f04e.ihx  temp_prob_15w204s.ihx temp_prob_stc15f.ihx
