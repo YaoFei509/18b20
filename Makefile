@@ -32,7 +32,7 @@ temp_prob_11f04e.ihx: temp_prob_11.rel ds18b20_1t_11.rel
 	$(CC) $(STC11FLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_11f04e.hex
 
-temp_prob_15w204s.ihx: temp_prob_15w204.rels ds18b20_1t.rel
+temp_prob_15w204s.ihx: temp_prob_15w204s.rel ds18b20_1t.rel
 	$(CC) $(STC11FLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_15w204s.hex
 
