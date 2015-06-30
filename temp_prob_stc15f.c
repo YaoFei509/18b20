@@ -57,7 +57,7 @@ char const __code digis[16]= {0, 6, 13, 19,
 			      50, 56, 63, 69,
 			      75, 81, 88, 94};
 
-char* const __code  hexchar="023456789ABCDEF";
+char* const __code  hexchar="0123456789ABCDEF";
 
 // software wall
 // 15F104W 只有4KB ROM, 最后8个字节是ID
@@ -71,7 +71,7 @@ char const __code __at(0x0ff0) wall[3] = {0x20, 0, 0};
 void init_timer()
 {
 	AUXR &= 0x7f;  // timer0 in 12T mode
-	TMOD = 0;      // all timer in mode 0 
+	TMOD  = 0;     // all timer in mode 0 
 	TL0   = T0MS; 
 	TH0   = T0MS >> 8; 
 	TR0   = 1;
@@ -92,22 +92,16 @@ void timer0_handler() __interrupt 1  __using 2
 // 打印十进制数字
 void print_num(unsigned char dat)
 {
-	char i;
+  	char i;
 
-	for (i=0;i<3;i++) {
-		if (dat < 100) 
-			break;
-		dat -= 100;
-	}
-
-	if (i) 
+	if (dat > 100) {
+		i = dat / 100;
+		dat %=100;
 		putchar('0'+i);
-
-	for (i=0;i<10;i++) {
-		if (dat < 10) 
-			break;
-		dat -= 10;
 	}
+
+	i = dat/10;
+	dat %= 10;
 
 	putchar('0'+i);
 	putchar('0'+dat);
@@ -180,7 +174,6 @@ int main()
 			}
 
 			putchar('\n');
-			putchar('\r');
 			
 			// update h:m:s
 			if (59 == sec++) {
