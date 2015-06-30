@@ -18,6 +18,8 @@
 
 #define US240 (4*US60)
 #define US180 (3*US60)
+
+#define MAXNUM 4
 //---------------------------------------------------------------
 
 // 检测并启动DS18B20转换
@@ -139,6 +141,16 @@ void DS18B20_WriteByte(BYTE dat)
     }
 }
 
+void DS18B20_WriteBit(BYTE dat)
+{
+	DQ = 0;
+	DelayXus(1);
+	DQ = dat;
+	DelayXus(US60);
+	DQ = 1;
+	DelayXus(1);
+}
+
 /*********************************************************
  *功能:读序列
  **参数：无返回
@@ -242,8 +254,6 @@ BYTE search_rom(BYTE *ss)//搜索ROM
 	}
 	while(zhan[l]!=0&&(num<MAXNUM));		
 loop:
-	search_cartoon();
-	display_total();
 
 }
 
