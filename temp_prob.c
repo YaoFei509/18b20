@@ -38,7 +38,7 @@
 typedef unsigned char uchar;
 
 // 11F04E 是1T单片机
-#ifdef STC11F04E || STC15W204S
+#if (defined STC11F04E) || (defined STC15W204S)
 #include "ds18b20_1t.h"
 #else
 #include "ds18b20.h"
@@ -63,6 +63,12 @@ char const __code digis[16]= {0, 6, 13, 19,
 #define FOSC  11059200
 #endif
 
+#ifdef STC15W204S
+__sfr __at(0xD6) T2H
+__sfr __at(0xD7) T2L
+__sft __at(0xAF) IE2
+#endif
+
 #define HZ    100
 #define T0MS  (65536 - FOSC/12/HZ)
 
@@ -83,7 +89,8 @@ void init_uart()
 	AUXR  = 0x13;  // enable BRTR, ExtRAM, select BRTR
 
 	BRT   = 0xFD;  // Baud Rate Timer 9600
-#elsif STC15W204S
+#else
+#ifdef STC15W204S
 	T2L   = (65536 - (FOSC/4/9600));
 	T2H   = (65536 - (FOSC/4/9600));
 	AUXR  |= 0x14;  // T2 in 1T
@@ -95,6 +102,7 @@ void init_uart()
 	TH1   = 0xFD;  // 9600
 	TL1   = 0xFD;  // 9600 
 	TR1   = 1;
+#endif
 #endif
 	
 	TR0   = 1;
