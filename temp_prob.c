@@ -38,7 +38,7 @@
 typedef unsigned char uchar;
 
 // 11F04E 是1T单片机
-#ifdef STC11F04E
+#ifdef STC11F04E || STC15W204S
 #include "ds18b20_1t.h"
 #else
 #include "ds18b20.h"
@@ -76,15 +76,21 @@ void init_uart()
 	AUXR = 0;
 
 	SCON  = 0x50;  // SCON mode 1, 8bit enable ucvr
-	TMOD |= 0x21;
+	TMOD |= 0x01;
 
 #ifdef STC11F04E       // 有独立波特率发生器BRT
 	PCON |= 0x80;  // SMOD = 1
 	AUXR  = 0x13;  // enable BRTR, ExtRAM, select BRTR
 
 	BRT   = 0xFD;  // Baud Rate Timer 9600
+#elsif STC15W204S
+	T2L   = (65536 - (FOSC/4/9600));
+	T2H   = (65536 - (FOSC/4/9600));
+	AUXR  |= 0x14;  // T2 in 1T
+	AUXR  |= 0x01;  // select T2 as baud
 #else
 	PCON |= 0x00;  // SMOD = 0 
+	TMOD |= 0x20;  // Timer1 as baud
 
 	TH1   = 0xFD;  // 9600
 	TL1   = 0xFD;  // 9600 
