@@ -19,12 +19,21 @@ BYTE StartDS18B20()
 	return 0;
 }
 
-// 读取测温值
-void ReadTemp()
+void ReadTemp(BYTE *rom)
 {
+	int i;
+	
 	while (!DQ);                    //等待转换完成
 	DS18B20_Reset();                //设备复位
-	DS18B20_WriteByte(0xCC);        //跳过ROM命令
+
+	if (rom == 0) {
+		DS18B20_WriteByte(0xCC);        //跳过ROM命令
+	} else {
+		DS18B20_WriteByte(0x55);    // match rom
+		for (i=0;i<8;i++) {
+			DS18B20_WriteByte(rom[i]);
+		}
+	}
 	DS18B20_WriteByte(0xBE);        //读暂存存储器命令
 	TPL = DS18B20_ReadByte();       //读温度低字节
 	TPH = DS18B20_ReadByte();       //读温度高字节
@@ -121,8 +130,8 @@ BYTE DS18B20_ReadRom(BYTE *rom)
 	BYTE i;
 	DS18B20_Reset(); 
 	DS18B20_WriteByte(0x33);
-	for (i = 8; i > 0; i--) {
-		rom[i - 1] = DS18B20_ReadByte();
+	for (i=0; i<8; i++) {
+		rom[i] = DS18B20_ReadByte();
 	}
 	return 0;
 }

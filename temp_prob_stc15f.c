@@ -29,7 +29,7 @@
 /*****************************************************
  *  温度测量
  *  
- *  STC 15F104E DS18B20@P3.7
+ *  STC 15F104E DS18B20@P3.3
  *  9600,n,8,1
  *
  *  Yao Fei  feiyao@me.com
@@ -47,6 +47,8 @@ typedef unsigned char uchar;
 
 // 记录温度数据
 uchar TPH, TPL;
+uchar ROM[4][8];  // max 4 DS18B20
+
 uchar flag;   // 定时采样标志
 
 // 小数部分
@@ -55,8 +57,11 @@ char const __code digis[16]= {0, 6, 13, 19,
 			      50, 56, 63, 69,
 			      75, 81, 88, 94};
 
+char* const __code  hexchar="023456789ABCDEF";
+
 // software wall
-char const __code __at(0x1ffd) wall[3] = {0x20, 0, 0};
+// 15F104W 只有4KB ROM, 最后8个字节是ID
+char const __code __at(0x0ff0) wall[3] = {0x20, 0, 0};
 
 // 定时器0，产生10ms中断，100次即为1s
 #define FOSC  11059200
@@ -108,6 +113,13 @@ void print_num(unsigned char dat)
 	putchar('0'+dat);
 }
 
+// 打印16进制数据
+void print_hex(char data)
+{
+	putchar(hexchar[(data >> 4) & 0x0f]);
+	putchar(hexchar[data & 0x0f]);
+}
+
 /*
  * 主程序
  */
@@ -119,18 +131,17 @@ int main()
 
 	init_timer();
 
+	if (0 == StartDS18B20()) {
+		DS18B20_ReadRom(ROM[0]);
+	}
+	
 	while(1) {
 		if (flag) {
-			P3_2 = !P3_2; // for test
+			P3_2 = !P3_2; // 心跳for test
 			flag = 0;
-			ReadTemp();
 
-			h = (TPH<<4) + ((TPL>>4) & 0x0f);
-			
-			if (h<0) 
-				l = digis[16 - (TPL&0xf)];
-			else
-				l = digis[TPL&0xf];
+			// 检测DS18B20是否存在，并启动测量
+			h = StartDS18B20();
 			
 			print_num(hour);
 			putchar(':');
@@ -138,17 +149,39 @@ int main()
 			putchar(':');
 			print_num(sec);
 			putchar('\t');
-			
-			if (h<0) {
-				putchar('-');
-				h = -h;
-			}
-			print_num(h);
-			
-			putchar('.');
-			print_num(l);
-			putchar('\n');
 
+			if (0 ==h) {
+				ReadTemp(ROM[0]);
+				
+				h = (TPH<<4) + ((TPL>>4) & 0x0f);
+				
+				if (h<0) {
+					l = digis[16 - (TPL&0xf)];
+					h = -h;
+					putchar('-');
+				} else {
+					l = digis[TPL&0xf];
+				}
+				print_num(h);
+			
+				putchar('.');
+				print_num(l);
+				putchar('\t');
+
+								
+				// print ROM
+				for (l=0; l<8; l++) {
+					print_hex(ROM[0][l]);
+					if (7==l)
+						putchar('\t');
+					else
+						putchar(':');
+				}
+			}
+
+			putchar('\n');
+			putchar('\r');
+			
 			// update h:m:s
 			if (59 == sec++) {
 				sec = 0;
