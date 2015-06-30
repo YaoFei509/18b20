@@ -131,3 +131,97 @@ BYTE DS18B20_ReadRom(BYTE *rom)
 	}
 	return 0;
 }
+
+//
+/***********************自动搜索ROM*****************************/
+BYTE DS18B20_Read_2bit(void)//读二位 子程序
+{
+	BYTE dat = 0;
+	
+	DQ = 0;
+	__nop__;
+	__nop__;
+	DQ = 1;
+	__nop__;
+	__nop__;
+	
+	if (DQ) 
+		dat = 2;
+	
+	DelayXus(4);
+	
+	DQ = 0;
+	__nop__;
+	__nop__;
+	DQ = 1;
+	__nop__;
+	__nop__;
+	
+	if (DQ) 
+		dat += 1;
+
+ 	return dat;
+}
+
+
+BYTE search_rom(BYTE *ss)//搜索ROM
+{ 
+	unsigned char k=0,l=0,chongtuwei=0,m=0,n=0;
+	unsigned char s=0;
+	unsigned char zhan[MAXNUM];
+
+	do {
+		DS18B20_Reset();
+		DS18B20_WriteByte(0xf0); //搜索ROM命令	
+
+		for(m=0;m<8;m++)
+		{
+			for(n=0;n<8;n++)
+			{
+				k = DS18B20_Read_2bit();//读两位数据
+
+				s>>=1;
+
+				switch (k) {
+					case 0x01 : //01读到的数据为0 写0 此位为0的器件响应
+							DS18B20_WriteBit(0);
+	    					ss[(m*8+n)]=0;
+							break;
+					case	2: //读到的数据为1 写1 此位为1的器件响应
+							s=s|0x80;
+							DS18B20_WriteBit(1);
+							ss[(m*8+n)]=1;
+							break;
+
+					case    0: //读到的数据为0  有冲突位 判断冲突位 
+								//如果冲突位大于栈顶写0 小于栈顶写以前数据 等于栈顶写1
+							chongtuwei=m*8+n+1;					
+							if(chongtuwei>zhan[l]) {						
+								DS18B20_WriteBit (0);
+								ss[(m*8+n)]=0;												
+								zhan[++l]=chongtuwei;						
+							} else if(chongtuwei<zhan[l]) {
+								s=s|((ss[(m*8+n)]&0x01)<<7);
+								DS18B20_WriteBit(ss[(m*8+n)]);
+							} else if(chongtuwei==zhan[l]) {
+								s=s|0x80;
+								DS18B20_WriteBit(1);
+								ss[(m*8+n)]=1;
+								l=l-1;
+							}
+							break;
+					default:
+					goto loop;
+				}
+			}
+			ID[num][m]=s;		
+		}
+		num++;
+	}
+	while(zhan[l]!=0&&(num<MAXNUM));		
+loop:
+	search_cartoon();
+	display_total();
+
+}
+
