@@ -28,6 +28,7 @@
  *  
  *  STC89C52 DS18B20@P3.7
  *  STC11F04E DS18B20@P3.3 (Pin 7)
+ *  STC15W204S DS18B20@P3.3
  *
  *  9600,n,8,1
  *
@@ -44,14 +45,13 @@ typedef unsigned char uchar;
 #include "ds18b20.h"
 #endif
 
+// Timer2 in STC15W204S
+#ifdef STC15W204S
+__sfr __at(0xD6) T2H;
+__sfr __at(0xD7) T2L;
+__sfr __at(0xAF) IE2;
+#endif
 
-uchar flag;   // 是否采样标志
-
-// 小数部分
-char const __code digis[16]= {0, 6, 13, 19, 
-			      25, 31, 38, 44, 
-			      50, 56, 63, 69,
-			      75, 81, 88, 94};
 // for Keil C compatible
 #define __nop__    __asm  nop __endasm
 
@@ -63,15 +63,18 @@ char const __code digis[16]= {0, 6, 13, 19,
 #define FOSC  11059200
 #endif
 
-#ifdef STC15W204S
-__sfr __at(0xD6) T2H
-__sfr __at(0xD7) T2L
-__sft __at(0xAF) IE2
-#endif
 
+#define BAUD  9600
 #define HZ    100
 #define T0MS  (65536 - FOSC/12/HZ)
 
+// 小数部分
+char const __code digis[16]= {0, 6, 13, 19, 
+			      25, 31, 38, 44, 
+			      50, 56, 63, 69,
+			      75, 81, 88, 94};
+
+uchar flag;   // 是否采样标志
 // 采集到的温度
 uchar TPH, TPL;
 uchar rom[4][8];  //Max 4 DS18B20
@@ -82,7 +85,7 @@ void init_uart()
 	AUXR = 0;
 
 	SCON  = 0x50;  // SCON mode 1, 8bit enable ucvr
-	TMOD |= 0x01;
+	TMOD |= 0x01;  // Timer0 for 100Hz
 
 #ifdef STC11F04E       // 有独立波特率发生器BRT
 	PCON |= 0x80;  // SMOD = 1
@@ -91,11 +94,13 @@ void init_uart()
 	BRT   = 0xFD;  // Baud Rate Timer 9600
 #else
 #ifdef STC15W204S
-	T2L   = (65536 - (FOSC/4/9600));
-	T2H   = (65536 - (FOSC/4/9600));
+	// 15W204S没有Timer1, 用Timer2做波特率发生器
+	T2L   = (65536 - (FOSC/4/BAUD));
+	T2H   = (65536 - (FOSC/4/BAUD)) >> 8 ;
 	AUXR  |= 0x14;  // T2 in 1T
 	AUXR  |= 0x01;  // select T2 as baud
 #else
+	// Normal 8031
 	PCON |= 0x00;  // SMOD = 0 
 	TMOD |= 0x20;  // Timer1 as baud
 
@@ -104,7 +109,6 @@ void init_uart()
 	TR1   = 1;
 #endif
 #endif
-	
 	TR0   = 1;
 	ET0   = 1;
 	IE   |= 0x90;  // enable serial interrupt 
@@ -119,8 +123,6 @@ void putchar(char c)
 	};
 	TI = 0;
 }
-
-char* const __code  hexchar="023456789ABCDEF";
 
 // UART interrupt handler
 void serial() __interrupt 4 __using 3
@@ -153,35 +155,29 @@ void timer0() __interrupt 1 __using 2
 		t0count = 0;
 	}
 
-	P1_7 = !P1_7; // for test
+	P1_1 = !P1_1; // for 100Hz test
 }
-
 
 // 打印十进制数字
 void print_num(unsigned char dat)
 {
 	char i;
 
-	for (i=0;i<3;i++) {
-		if (dat < 100) 
-			break;
-		dat -= 100;
-	}
-
-	if (i) 
+	if (dat > 100) {
+		i = dat / 100;
+		dat %=100;
 		putchar('0'+i);
-
-	for (i=0;i<10;i++) {
-		if (dat < 10) 
-			break;
-		dat -= 10;
 	}
+
+	i = dat/10;
+	dat %= 10;
 
 	putchar('0'+i);
 	putchar('0'+dat);
 }
 
 // 打印16进制数据
+char* const __code  hexchar="0123456789ABCDEF";
 void print_hex(char data)
 {
 	putchar(hexchar[(data >> 4) & 0x0f]);
@@ -209,7 +205,7 @@ int main()
 			flag = 0;
 
 			h = StartDS18B20();
-			
+
 			// 先打印时标
 			print_num(hour);
 			putchar(':');
