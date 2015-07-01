@@ -17,7 +17,7 @@ PACKIHX=$(PREFIX)packihx
 STC11FLAGS = -DSTC11F04E=1
 
 # for STC15F104E
-STC15FLAGS =  --iram-size 128 --no-xinit-opt 
+STC15FLAGS =  -DSTC15F104=1 --iram-size 128 --no-xinit-opt 
 
 #for STC15W204S
 STC15W204SFLAGS = -DSTC15W204S=1 
