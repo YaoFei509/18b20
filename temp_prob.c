@@ -70,8 +70,12 @@ uchar rom[4][8];  //Max 4 DS18B20
 // 初始化串口和定时器
 void init_timer0()
 {
+#ifdef STC11F04E
+	TMOD = 1;  // 标准8051 模式1,16比特
+#else
 	TMOD = 0;  // Timer0 for 100Hz
-			   // Mode 0, 16bit auto load
+		   // Mode 0, 16bit auto load
+#endif
 	TL0 = T0MS & 255;
 	TH0 = T0MS>>8;
 	TR0   = 1;
@@ -100,6 +104,10 @@ void serial() __interrupt 4 __using 3
 uchar times =0;
 void timer0() __interrupt 1 __using 2
 {
+#ifdef STC11F04E  // 标准8051不能自动装载
+	TL0 = T0MS & 255;
+	TH0 = T0MS>>8;
+#endif
 	times++;
 	if (HZ == times) {
 		flag = 0x55;
