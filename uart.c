@@ -58,6 +58,41 @@ void putchar(char c)
 }
 #else   // SOFT UART
 
+#define	P_TXD P3_1   /*定义模拟串口发送端,可以是任意IO*/
+
+void init_uart()
+{
+	P_TXD = 1;
+}
+
+void	BitTime(void)
+{
+	unsigned int  i;
+	i = ((MAIN_Fosc / 100) * 104) / 130000L - 1; //根据主时钟来计算位时间
+	while(--i);
+}
+
+void putchar(char  dat)
+{
+	char	i;
+
+	P_TXD = 0;    // start bit 
+	BitTime();
+	for(i=0; i<8; i++) {
+		P_TXD = (dat & 1) ;
+/*		if(dat & 1)		
+			P_TXD = 1;
+		else	
+			P_TXD = 0;
+*/
+		dat >>= 1;
+		BitTime();
+	}
+	P_TXD = 1;
+	BitTime();  // stop 2 bit 
+	BitTime();
+}
+
 #endif
 
 // 打印十进制数字
