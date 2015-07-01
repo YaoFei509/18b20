@@ -70,7 +70,8 @@ uchar rom[4][8];  //Max 4 DS18B20
 // 初始化串口和定时器
 void init_timer0()
 {
-	TMOD |= 0x01;  // Timer0 for 100Hz
+	TMOD = 0;  // Timer0 for 100Hz
+			   // Mode 0, 16bit auto load
 	TL0 = T0MS & 255;
 	TH0 = T0MS>>8;
 	TR0   = 1;
@@ -96,18 +97,13 @@ void serial() __interrupt 4 __using 3
 #endif
 
 // Timer 0 handler
-uchar t0count =0;
+uchar times =0;
 void timer0() __interrupt 1 __using 2
 {
-	TR0 = 0;
-	TL0 = T0MS;
-	TH0 = T0MS>>8;
-	TR0 = 1;
-
-	t0count++;
-	if( HZ == t0count) {
+	times++;
+	if (HZ == times) {
 		flag = 0x55;
-		t0count = 0;
+		times = 0;
 	}
 
 #ifdef STC15F104
