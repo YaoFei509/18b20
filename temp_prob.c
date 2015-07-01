@@ -29,6 +29,7 @@
  *  STC89C52 DS18B20@P3.7
  *  STC11F04E DS18B20@P3.3 (Pin 7)
  *  STC15W204S DS18B20@P3.3
+ *  STC15F104(E/W) DS18B20@P3.3 
  *
  *  9600,n,8,1
  *
@@ -39,7 +40,7 @@
 typedef unsigned char uchar;
 
 // 11F04E 是1T单片机
-#if (defined STC11F04E) || (defined STC15W204S)
+#if (defined STC11F04E) || (defined STC15W204S) || (defined STC15F104 )
 #include "ds18b20_1t.h"
 #else
 #include "ds18b20.h"
@@ -80,12 +81,22 @@ uchar TPH, TPL;
 uchar rom[4][8];  //Max 4 DS18B20
 
 // 初始化串口和定时器
+void init_timer0()
+{
+	TMOD |= 0x01;  // Timer0 for 100Hz
+	TL0 = T0MS;
+	TH0 = T0MS>>8;
+	TR0   = 1;
+	ET0   = 1;
+}
+
 void init_uart()
 {
+
+#ifndef STC15F104 // soft uart	
 	AUXR = 0;
 
 	SCON  = 0x50;  // SCON mode 1, 8bit enable ucvr
-	TMOD |= 0x01;  // Timer0 for 100Hz
 
 #ifdef STC11F04E       // 有独立波特率发生器BRT
 	PCON |= 0x80;  // SMOD = 1
@@ -107,9 +118,9 @@ void init_uart()
 	TL1   = 0xFD;  // 9600 
 	TR1   = 1;
 #endif
-	TR0   = 1;
-	ET0   = 1;
 	IE   |= 0x90;  // enable serial interrupt 
+
+#endif // STC15F104
 	EA    = 1;
 }
 
@@ -153,7 +164,11 @@ void timer0() __interrupt 1 __using 2
 		t0count = 0;
 	}
 
+#ifdef STC15F104
+	P3_2 = !P3_2;
+#else
 	P1_1 = !P1_1; // for 100Hz test
+#endif
 }
 
 // 打印十进制数字
@@ -192,6 +207,7 @@ int main()
 	uchar hour=0, minu=0, sec=0; //时分秒
 
 	init_uart();
+	init_timer0();
 
 	if (0 == StartDS18B20()) {
 		DS18B20_ReadRom(rom[0]);
