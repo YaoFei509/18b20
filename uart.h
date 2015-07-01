@@ -1,5 +1,5 @@
 #define BAUD  9600
-#ifdef STC15F100
+#ifdef STC15F104
 #define __SOFT_UART 1
 #endif
 
