@@ -37,6 +37,8 @@
  */
 #include <stc12.h>
 
+#include "uart.h"
+
 typedef unsigned char uchar;
 
 // 11F04E 是1T单片机
@@ -46,26 +48,11 @@ typedef unsigned char uchar;
 #include "ds18b20.h"
 #endif
 
-// Timer2 in STC15W204S
-#ifdef STC15W204S
-__sfr __at(0xD6) T2H;
-__sfr __at(0xD7) T2L;
-__sfr __at(0xAF) IE2;
-#endif
 
 // for Keil C compatible
 #define __nop__    __asm  nop __endasm
 
-#ifdef STC11F04E
-// 11F04E主频只有5.66MHz
-#define FOSC  5660000
-#else
-// 89RC52是11.0592MHz
-#define FOSC  11059200
-#endif
 
-
-#define BAUD  9600
 #define HZ    100
 #define T0MS  (65536 - FOSC/12/HZ)
 
@@ -84,55 +71,13 @@ uchar rom[4][8];  //Max 4 DS18B20
 void init_timer0()
 {
 	TMOD |= 0x01;  // Timer0 for 100Hz
-	TL0 = T0MS;
+	TL0 = T0MS & 255;
 	TH0 = T0MS>>8;
 	TR0   = 1;
 	ET0   = 1;
 }
 
-void init_uart()
-{
-
-#ifndef STC15F104 // soft uart	
-	AUXR = 0;
-
-	SCON  = 0x50;  // SCON mode 1, 8bit enable ucvr
-
-#ifdef STC11F04E       // 有独立波特率发生器BRT
-	PCON |= 0x80;  // SMOD = 1
-	AUXR  = 0x13;  // enable BRTR, ExtRAM, select BRTR
-
-	BRT   = 0xFD;  // Baud Rate Timer 9600
-#elif defined STC15W204S
-	// 15W204S没有Timer1, 用Timer2做波特率发生器
-	T2L   = (65536 - (FOSC/4/BAUD));
-	T2H   = (65536 - (FOSC/4/BAUD)) >> 8 ;
-	AUXR  |= 0x14;  // T2 in 1T
-	AUXR  |= 0x01;  // select T2 as baud
-#else
-	// Normal 8031
-	PCON |= 0x00;  // SMOD = 0 
-	TMOD |= 0x20;  // Timer1 as baud
-
-	TH1   = 0xFD;  // 9600
-	TL1   = 0xFD;  // 9600 
-	TR1   = 1;
-#endif
-	IE   |= 0x90;  // enable serial interrupt 
-
-#endif // STC15F104
-	EA    = 1;
-}
-
-// for SDCC, printf
-void putchar(char c) 
-{
-	SBUF = c;
-	while(!TI) {
-	};
-	TI = 0;
-}
-
+#ifndef STC15F104
 // UART interrupt handler
 void serial() __interrupt 4 __using 3
 {
@@ -148,6 +93,7 @@ void serial() __interrupt 4 __using 3
 			flag = 0;
 	} 
 }
+#endif
 
 // Timer 0 handler
 uchar t0count =0;
@@ -169,32 +115,6 @@ void timer0() __interrupt 1 __using 2
 #else
 	P1_1 = !P1_1; // for 100Hz test
 #endif
-}
-
-// 打印十进制数字
-void print_num(unsigned char dat)
-{
-	char i;
-
-	if (dat > 100) {
-		i = dat / 100;
-		dat %=100;
-		putchar('0'+i);
-	}
-
-	i = dat/10;
-	dat %= 10;
-
-	putchar('0'+i);
-	putchar('0'+dat);
-}
-
-// 打印16进制数据
-char* const __code  hexchar="0123456789ABCDEF";
-void print_hex(char data)
-{
-	putchar(hexchar[(data >> 4) & 0x0f]);
-	putchar(hexchar[data & 0x0f]);
 }
 
 
