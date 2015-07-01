@@ -62,13 +62,13 @@ void putchar(char c)
 
 void init_uart()
 {
-	P_TXD = 1;
+	EA    = 1;  //enable all  interrupt
 }
 
 void	BitTime(void)
 {
 	unsigned int  i;
-	i = ((MAIN_Fosc / 100) * 104) / 130000L - 1; //根据主时钟来计算位时间
+	i = ((FOSC/ 100) * 104) / 130000L - 1; //根据主时钟来计算位时间
 	while(--i);
 }
 
@@ -80,11 +80,6 @@ void putchar(char  dat)
 	BitTime();
 	for(i=0; i<8; i++) {
 		P_TXD = (dat & 1) ;
-/*		if(dat & 1)		
-			P_TXD = 1;
-		else	
-			P_TXD = 0;
-*/
 		dat >>= 1;
 		BitTime();
 	}
