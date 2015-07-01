@@ -39,7 +39,7 @@ temp_prob_15w204s.ihx: temp_prob_15w204s.rel uart_15w204s.rel ds18b20_1t.rel
 downld: temp_prob.ihx
 	stcisp -f $<
 
-temp_prob_stc15f.ihx: temp_prob_stc15f.rel soft_uart.rel ds18b20_1t.rel
+temp_prob_stc15f.ihx: temp_prob_stc15f.rel uart_15f104.rel ds18b20_1t.rel
 	$(CC) $(STC15FLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_stc15f.hex
 
@@ -63,11 +63,11 @@ uart_15w204s.rel: uart.c
 	$(CC) $(STC15W204SFLAGS) -o $@ -c $<
 
 
-temp_prob_stc15f.rel: temp_prob_stc15f.c
-	$(CC) $(STC15FLAGS) -c $<
+temp_prob_stc15f.rel: temp_prob.c
+	$(CC) $(STC15FLAGS) -o $@ -c $<
 
-soft_uart.rel: soft_uart.c  
-	$(CC) $(STC15FLAGS) -c $<
+uart_15f104.rel: uart.c  
+	$(CC) $(STC15FLAGS) -o $@ -c $<
 
 ds18b20.rel: ds18b20.c
 	$(CC) -c $<
