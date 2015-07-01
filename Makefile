@@ -24,16 +24,16 @@ STC15W204SFLAGS = -DSTC15W204S=1
 
 all: temp_prob.ihx  temp_prob_11f04e.ihx  temp_prob_15w204s.ihx temp_prob_stc15f.ihx
 
-temp_prob.ihx:	temp_prob.rel ds18b20.rel
+temp_prob.ihx:	temp_prob.rel uart.rel ds18b20.rel
 	$(CC) $^
 	$(PACKIHX) $@ > temp_prob.hex
 
-temp_prob_11f04e.ihx: temp_prob_11.rel ds18b20_1t_11.rel
+temp_prob_11f04e.ihx: temp_prob_11.rel uart_11.rel ds18b20_1t_11.rel
 	$(CC) $(STC11FLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_11f04e.hex
 
-temp_prob_15w204s.ihx: temp_prob_15w204s.rel ds18b20_1t.rel
-	$(CC) $(STC11FLAGS) -o $@ $^
+temp_prob_15w204s.ihx: temp_prob_15w204s.rel uart_15w204s.rel ds18b20_1t.rel
+	$(CC) $(STC15W204SFLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_15w204s.hex
 
 downld: temp_prob.ihx
@@ -50,6 +50,16 @@ temp_prob_11.rel: temp_prob.c
 	$(CC) $(STC11FLAGS) -o $@ -c $<
 
 temp_prob_15w204s.rel: temp_prob.c
+	$(CC) $(STC15W204SFLAGS) -o $@ -c $<
+
+#UART
+uart.rel: uart.c
+	$(CC) -c $<
+
+uart_11.rel: uart.c
+	$(CC) $(STC11FLAGS) -o $@ -c $<
+
+uart_15w204s.rel: uart.c
 	$(CC) $(STC15W204SFLAGS) -o $@ -c $<
 
 
