@@ -92,8 +92,7 @@ void init_uart()
 	AUXR  = 0x13;  // enable BRTR, ExtRAM, select BRTR
 
 	BRT   = 0xFD;  // Baud Rate Timer 9600
-#else
-#ifdef STC15W204S
+#elif defined STC15W204S
 	// 15W204S没有Timer1, 用Timer2做波特率发生器
 	T2L   = (65536 - (FOSC/4/BAUD));
 	T2H   = (65536 - (FOSC/4/BAUD)) >> 8 ;
@@ -107,7 +106,6 @@ void init_uart()
 	TH1   = 0xFD;  // 9600
 	TL1   = 0xFD;  // 9600 
 	TR1   = 1;
-#endif
 #endif
 	TR0   = 1;
 	ET0   = 1;
