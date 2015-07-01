@@ -5,10 +5,10 @@
 
 #ifdef STC11F04E
 // 11F04E主频只有5.66MHz
-#define FOSC  5660000
+#define FOSC  5660000L
 #else
 // 89RC52是11.0592MHz
-#define FOSC  11059200
+#define FOSC  11059200L
 #endif
 
 void init_uart();
