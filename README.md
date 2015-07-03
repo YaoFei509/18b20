@@ -1,15 +1,17 @@
 18b20
 =====
 
-使用18B20和STC15F104单片机的测温探头小程序
+使用DS18B20和单片机的测温探头小程序
 
-运行在STC单片机上，用SDCC编译
+运行在MCS51兼容单片机上，用SDCC编译
 
 对于89C52类单片机，使用temp_prob.hex
 
 对于STC11F04E类1T单片机，使用temp_prob_11f04e.hex
 
-对于STC15F104E类8pin单片机，使用temp_prob_stc15.hex
+对于STC 15W204S类单片机，使用temp_prob_15w204s.hex
+
+对于STC15F104E类8pin单片机，使用temp_prob_15f104.hex
 
 每秒钟从18B20温度探头采集一次温度，从串口打印输出时间值、温度值和DS18B20 MAC地址
 
