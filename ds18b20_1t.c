@@ -5,7 +5,7 @@
  * 工作频率: 5.66MHz
  *
  **************************************/
-#include "ds18b20_1t.h"
+#include "ds18b20.h"
 
 //---------------------------------------------------------------
 // 延时时间
@@ -197,7 +197,7 @@ BYTE DS18B20_Read_2bit(void)//读二位 子程序
  	return dat;
 }
 
-
+#if 0
 BYTE search_rom(BYTE *ss)//搜索ROM
 { 
 	unsigned char k=0,l=0,chongtuwei=0,m=0,n=0;
@@ -256,4 +256,4 @@ BYTE search_rom(BYTE *ss)//搜索ROM
 loop:
 
 }
-
+#endif
