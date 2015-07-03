@@ -13,13 +13,23 @@ extern char TPL;                   //存放温度值的低字节
 #define __nop__    __asm  nop __endasm
 
 //------------------------------------------------------
-BYTE StartDS18B20();
+__bit StartDS18B20();
+
 void DelayXus(BYTE n);
-BYTE DS18B20_Reset();
+
+__bit DS18B20_Reset();
+
 void DS18B20_WriteByte(BYTE dat);
+
+void DS18B20_WriteBit(__bit);
+
 BYTE DS18B20_ReadByte();
+
+__bit DS18B20_ReadBit();
+
 BYTE DS18B20_ReadRom(BYTE *);
 // return value in TPH TPL
 // Yao Fei
 void ReadTemp(BYTE *rom);
+
 #endif
