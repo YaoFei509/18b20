@@ -24,50 +24,44 @@
 */
 
 /*****************************************************
- *  温度测量
+ *  自动温度采集探头
  *  
- *  STC89C52 DS18B20@P3.7
- *  STC11F04E DS18B20@P3.3 (Pin 7)
- *  STC15W204S DS18B20@P3.3
+ *  STC89C52       DS18B20@P3.7
+ *  STC11F04E      DS18B20@P3.3 (Pin 7)
+ *  STC15W204S     DS18B20@P3.3
  *  STC15F104(E/W) DS18B20@P3.3 
  *
- *  9600,n,8,1
+ *  9600,n,8,1 
+ *  每秒输出一次时标、测温值、ROM地址
  *
  *  Yao Fei  feiyao@me.com
  */
+
 #include <stc12.h>
 
 #include "uart.h"
+#include "ds18b20.h"
 
 typedef unsigned char uchar;
-
-// 11F04E 是1T单片机
-#if (defined STC11F04E) || (defined STC15W204S) || (defined STC15F104 )
-#include "ds18b20_1t.h"
-#else
-#include "ds18b20.h"
-#endif
-
 
 // for Keil C compatible
 #define __nop__    __asm  nop __endasm
 
-
-#define HZ    100
-#define T0MS  (65536 - FOSC/12/HZ)
-
-// 小数部分
+// 小数部分  1/16 = 0.0625 
 char const __code digis[16]= {0, 6, 13, 19, 
 			      25, 31, 38, 44, 
 			      50, 56, 63, 69,
 			      75, 81, 88, 94};
 
-uchar flag;   // 是否采样标志
+char flag;   // 是否采样标志
 // 采集到的温度
-uchar TPH, TPL;
-uchar rom[4][8];  //Max 4 DS18B20
+char TPH, TPL;
+char rom[4][8];  //Max 4 DS18B20
 
-// 初始化串口和定时器
+// 初始化定时器
+#define HZ    100
+#define T0MS  (65536 - FOSC/12/HZ)
+
 void init_timer0()
 {
 #ifdef STC11F04E
@@ -82,26 +76,8 @@ void init_timer0()
 	ET0   = 1;
 }
 
-#ifndef STC15F104
-// UART interrupt handler
-void serial() __interrupt 4 __using 3
-{
-	uchar c;
-	
-	if (RI) {
-		c = SBUF;
-		RI = 0;
-
-		if ( 't' == c ) 
-			flag = 0x55;
-		else
-			flag = 0;
-	} 
-}
-#endif
-
 // Timer 0 handler
-uchar times =0;
+uchar times = 0;
 void timer0() __interrupt 1 __using 2
 {
 #ifdef STC11F04E  // 标准8051不能自动装载
@@ -121,6 +97,23 @@ void timer0() __interrupt 1 __using 2
 #endif
 }
 
+#ifndef STC15F104
+// UART interrupt handler
+void serial() __interrupt 4 __using 3
+{
+	uchar c;
+	
+	if (RI) {
+		c = SBUF;
+		RI = 0;
+
+		if ( 't' == c ) 
+			flag = 0x55;
+		else
+			flag = 0;
+	} 
+}
+#endif
 
 /*
  * 主程序
@@ -183,7 +176,8 @@ int main()
 						putchar(':');
 				}
 			}
-			
+
+			print_num(times);
 			putchar('\n');
 			
 			// update h:m:s
