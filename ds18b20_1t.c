@@ -19,13 +19,12 @@
 #define US240 (4*US60)
 #define US180 (3*US60)
 
-#define MAXNUM 4
 //---------------------------------------------------------------
 
 // 检测并启动DS18B20转换
 // 返回0: 存在并已经启动
 //     1: 不存在DS18B20
-BYTE StartDS18B20()
+__bit StartDS18B20()
 {
 	if (DS18B20_Reset() == 0) {
 		DS18B20_WriteByte(0xCC);        //跳过ROM命令
@@ -77,27 +76,20 @@ void DelayXus(BYTE n)
 /**************************************
 复位DS18B20,并检测设备是否存在
 **************************************/
-BYTE DS18B20_Reset()
+__bit DS18B20_Reset()
 {
-	BYTE i=0;
-	BYTE CY = 1;
+ 	__bit CY = 1;
 
-	while (CY && (i<100)) {
-		DQ = 0;                     //送出低电平复位信号
-		DelayXus(US240);            //延时至少480us
-		DelayXus(US240);
-		DQ = 1;                     //释放数据线
-		DelayXus(US60);               //等待60us
-		CY = DQ;                    //检测存在脉冲
-		DelayXus(US240);              //等待设备释放数据线
-		DelayXus(US180);
-		i++;
-	}
+	DQ = 0;                     //送出低电平复位信号
+	DelayXus(US240);            //延时至少480us
+	DelayXus(US240);
+	DQ = 1;                     //释放数据线
+	DelayXus(US60);               //等待60us
+	CY = DQ;                    //检测存在脉冲
+	DelayXus(US240);              //等待设备释放数据线
+	DelayXus(US180);
 
-	if (100 == i )
-		return 1;
-	else
-		return 0;  //found
+	return CY;
 }
 
 /**************************************
@@ -141,7 +133,7 @@ void DS18B20_WriteByte(BYTE dat)
     }
 }
 
-void DS18B20_WriteBit(BYTE dat)
+void DS18B20_WriteBit(__bit dat)
 {
 	DQ = 0;
 	DelayXus(1);
@@ -166,94 +158,30 @@ BYTE DS18B20_ReadRom(BYTE *rom)
 	return 0;
 }
 
-//
-/***********************自动搜索ROM*****************************/
-BYTE DS18B20_Read_2bit(void)//读二位 子程序
+// 读一位
+__bit DS18B20_ReadBit()
 {
-	BYTE dat = 0;
-	
-	DQ = 0;
-	__nop__;
-	__nop__;
-	DQ = 1;
-	__nop__;
-	__nop__;
-	
-	if (DQ) 
-		dat = 2;
-	
-	DelayXus(4);
-	
-	DQ = 0;
-	__nop__;
-	__nop__;
-	DQ = 1;
-	__nop__;
-	__nop__;
-	
-	if (DQ) 
-		dat += 1;
+	__bit result;
 
- 	return dat;
+	DQ = 0;            //开始时间片
+
+	__nop__;           //延时等待
+	__nop__;
+	__nop__;
+	__nop__;
+	
+        DQ = 1;                     //准备接收
+
+	__nop__;           //延时等待
+	__nop__;
+	__nop__;
+	__nop__;
+
+	result = DQ;
+
+	DelayXus(US60);               //等待时间片结束
+
+        return result;
 }
 
-#if 0
-BYTE search_rom(BYTE *ss)//搜索ROM
-{ 
-	unsigned char k=0,l=0,chongtuwei=0,m=0,n=0;
-	unsigned char s=0;
-	unsigned char zhan[MAXNUM];
 
-	do {
-		DS18B20_Reset();
-		DS18B20_WriteByte(0xf0); //搜索ROM命令	
-
-		for(m=0;m<8;m++)
-		{
-			for(n=0;n<8;n++)
-			{
-				k = DS18B20_Read_2bit();//读两位数据
-
-				s>>=1;
-
-				switch (k) {
-					case 0x01 : //01读到的数据为0 写0 此位为0的器件响应
-							DS18B20_WriteBit(0);
-	    					ss[(m*8+n)]=0;
-							break;
-					case	2: //读到的数据为1 写1 此位为1的器件响应
-							s=s|0x80;
-							DS18B20_WriteBit(1);
-							ss[(m*8+n)]=1;
-							break;
-
-					case    0: //读到的数据为0  有冲突位 判断冲突位 
-								//如果冲突位大于栈顶写0 小于栈顶写以前数据 等于栈顶写1
-							chongtuwei=m*8+n+1;					
-							if(chongtuwei>zhan[l]) {						
-								DS18B20_WriteBit (0);
-								ss[(m*8+n)]=0;												
-								zhan[++l]=chongtuwei;						
-							} else if(chongtuwei<zhan[l]) {
-								s=s|((ss[(m*8+n)]&0x01)<<7);
-								DS18B20_WriteBit(ss[(m*8+n)]);
-							} else if(chongtuwei==zhan[l]) {
-								s=s|0x80;
-								DS18B20_WriteBit(1);
-								ss[(m*8+n)]=1;
-								l=l-1;
-							}
-							break;
-					default:
-					goto loop;
-				}
-			}
-			ID[num][m]=s;		
-		}
-		num++;
-	}
-	while(zhan[l]!=0&&(num<MAXNUM));		
-loop:
-
-}
-#endif
