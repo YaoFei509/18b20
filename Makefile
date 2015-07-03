@@ -78,6 +78,10 @@ ds18b20_1t.rel: ds18b20_1t.c
 ds18b20_1t_11.rel: ds18b20_1t.c
 	$(CC) -o $@ $(STC11FLAGS) -c $<
 
+log:
+	git pull
+	git log --format=short --graph > ChangeLog
+
 clean:
 	-rm -f *.ihx *.hex *.asm *.lnk *.lst *.map *.mem *.rel *.o  *.sym *.rst *~ *.lk *.bin
 
