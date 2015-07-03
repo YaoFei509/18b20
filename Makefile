@@ -24,25 +24,24 @@ STC15W204SFLAGS = -DSTC15W204S=1
 
 all: temp_prob.ihx  temp_prob_11f04e.ihx  temp_prob_15w204s.ihx temp_prob_15f104.ihx
 
-temp_prob.ihx:	temp_prob.rel uart.rel ds18b20.rel
+temp_prob.ihx:	temp_prob.rel uart.rel ds18b20.rel ds18b20_search.rel
 	$(CC) $^
 	$(PACKIHX) $@ > temp_prob.hex
 
-temp_prob_11f04e.ihx: temp_prob_11.rel uart_11.rel ds18b20_1t_11.rel
+temp_prob_11f04e.ihx: temp_prob_11.rel uart_11.rel ds18b20_1t_11.rel  ds18b20_search_11.rel
 	$(CC) $(STC11FLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_11f04e.hex
 
-temp_prob_15w204s.ihx: temp_prob_15w204s.rel uart_15w204s.rel ds18b20_1t.rel
+temp_prob_15w204s.ihx: temp_prob_15w204s.rel uart_15w204s.rel ds18b20_1t.rel ds18b20_search_11.rel
 	$(CC) $(STC15W204SFLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_15w204s.hex
 
-downld: temp_prob.ihx
-	stcisp -f $<
-
-temp_prob_15f104.ihx: temp_prob_15f104.rel uart_15f104.rel ds18b20_1t.rel
+temp_prob_15f104.ihx: temp_prob_15f104.rel uart_15f104.rel ds18b20_1t.rel ds18b20_search_11.rel
 	$(CC) $(STC15FLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_15f104.hex
 
+
+#temp_prob
 temp_prob.rel: temp_prob.c
 	$(CC) -c $<
 
@@ -51,6 +50,9 @@ temp_prob_11.rel: temp_prob.c
 
 temp_prob_15w204s.rel: temp_prob.c
 	$(CC) $(STC15W204SFLAGS) -o $@ -c $<
+
+temp_prob_15f104.rel: temp_prob.c
+	$(CC) $(STC15FLAGS) -o $@ -c $<
 
 #UART
 uart.rel: uart.c
@@ -62,13 +64,10 @@ uart_11.rel: uart.c
 uart_15w204s.rel: uart.c
 	$(CC) $(STC15W204SFLAGS) -o $@ -c $<
 
-
-temp_prob_15f104.rel: temp_prob.c
-	$(CC) $(STC15FLAGS) -o $@ -c $<
-
 uart_15f104.rel: uart.c  
 	$(CC) $(STC15FLAGS) -o $@ -c $<
 
+#DS18B20
 ds18b20.rel: ds18b20.c
 	$(CC) -c $<
 
@@ -77,6 +76,14 @@ ds18b20_1t.rel: ds18b20_1t.c
 
 ds18b20_1t_11.rel: ds18b20_1t.c
 	$(CC) -o $@ $(STC11FLAGS) -c $<
+
+
+#ds18B20 Search
+ds18b20_search_11.rel: ds18b20_search.c
+	$(CC) -o $@ $(STC11FLAGS) -c $<
+
+ds18b20_search.rel: ds18b20_search.c
+	$(CC) -c $<
 
 log:
 	git pull
