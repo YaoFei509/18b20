@@ -31,8 +31,10 @@
  *  STC15W204S     DS18B20@P3.3
  *  STC15F104(E/W) DS18B20@P3.3 
  *
+ *  支持最多并联四个DS18B20
+ *
  *  9600,n,8,1 
- *  每秒输出一次时标、测温值、ROM地址
+ *  每秒输出一次时标、测温值、ROM地址、时间(x10ms)
  *
  *  Yao Fei  feiyao@me.com
  */
@@ -41,6 +43,8 @@
 
 #include "uart.h"
 #include "ds18b20.h"
+
+#include "ds18b20_search.h"
 
 typedef unsigned char uchar;
 
@@ -56,8 +60,8 @@ char const __code digis[16]= {0, 6, 13, 19,
 char flag;   // 是否采样标志
 // 采集到的温度
 char TPH, TPL;
-char rom[4][8];  //Max 4 DS18B20
 
+// ---------------  定时器 -------------------------
 // 初始化定时器
 #define HZ    100
 #define T0MS  (65536 - FOSC/12/HZ)
@@ -97,6 +101,8 @@ void timer0() __interrupt 1 __using 2
 #endif
 }
 
+// -------------------------------------------------
+
 #ifndef STC15F104
 // UART interrupt handler
 void serial() __interrupt 4 __using 3
@@ -118,67 +124,79 @@ void serial() __interrupt 4 __using 3
 /*
  * 主程序
  */
+uchar hour=0, minu=0, sec=0; //时分秒
+
 int main()
 {
 	char h, l;
-	uchar hour=0, minu=0, sec=0; //时分秒
+	char num, i;
 
+	// 先初始化串口
 	init_uart();
-	init_timer0();
 
-	if (0 == StartDS18B20()) {
-		DS18B20_ReadRom(rom[0]);
+	// 找不到DS18B20则一直显示S
+	while ((num = DS18B20_Search()) == 0) {
+		putchar('S');
 	}
+
+	// 初始化定时器
+	init_timer0();
 	
 	while(1) {
 		// 恶心的前后台，中断触发标志
 		if (flag) {
 			flag = 0;
+			if (0 == StartDS18B20()) { //启动所有DS18B20测温
+				for (i=0;i<num;i++) {
+                                        // 先打印时标
+					print_num(hour);
+					putchar(':');
+					print_num(minu);
+					putchar(':');
+					print_num(sec);
+					putchar('\t');
 
-			h = StartDS18B20();
+					//读温度
+					ReadTemp(DS18B20_ROM[i]);
 
-			// 先打印时标
-			print_num(hour);
-			putchar(':');
-			print_num(minu);
-			putchar(':');
-			print_num(sec);
-			putchar('\t');
-
-			if (h==0) {
-				ReadTemp(rom[0]);
-				
-				h = (TPH<<4) + ((TPL>>4) & 0x0f);
-				
-				if (h<0) 
-					l = digis[16 - (TPL&0xf)];
-				else
-					l = digis[TPL&0xf];
-				
-			
-				if (h<0) {
-					putchar('-');
-					h = -h;
-				}
-				print_num(h);
-				
-				putchar('.');
-				print_num(l);
-
-				putchar('\t');
-				
-				// print ROM
-				for (l=0; l<8; l++) {
-					print_hex(rom[0][l]);
-					if (7==l)
-						putchar('\t');
+					//组合高低位
+					h = (TPH<<4) + ((TPL>>4) & 0x0f);
+					
+					// 用查表算法，省略*0.0625运算
+					if (h<0) 
+						l = digis[16 - (TPL&0xf)];
 					else
-						putchar(':');
-				}
-			}
+						l = digis[TPL&0xf];
+					
+					// 正负号
+					if (h<0) {
+						putchar('-');
+						h = -h;
+					}
+					print_num(h);
+				
+					putchar('.');
+					print_num(l);
 
-			print_num(times);
-			putchar('\n');
+					putchar('\t');
+				
+					// print ROM
+					for (l=0; l<8; l++) {
+						print_hex(DS18B20_ROM[i][l]);
+						if (7==l)
+							putchar('\t');
+						else
+							putchar(':');
+					}
+
+					// 打印此时的定时器时间，估算运行时间
+					print_num(times);
+					
+					putchar('\n');
+					putchar('\r');
+					
+				} // for i<num
+			}
 			
 			// update h:m:s
 			if (59 == sec++) {
