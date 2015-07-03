@@ -21,9 +21,11 @@ void init_uart()
 #ifdef STC11F04E       // 有独立波特率发生器BRT
 
 	PCON |= 0x80;  // SMOD = 1
-	AUXR  = 0x13;  // enable BRTR, ExtRAM, select BRTR
+	AUXR  = 0x03;  // enable BRTR, ExtRAM, select BRTR
 
 	BRT   = 0xFD;  // Baud Rate Timer 9600
+
+	AUXR |= 0x10;
 
 #elif defined STC15W204S
 
