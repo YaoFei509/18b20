@@ -22,7 +22,7 @@ STC15FLAGS =  -DSTC15F104=1 --iram-size 128 --no-xinit-opt
 #for STC15W204S
 STC15W204SFLAGS = -DSTC15W204S=1 
 
-all: temp_prob.ihx  temp_prob_11f04e.ihx  temp_prob_15w204s.ihx temp_prob_stc15f.ihx
+all: temp_prob.ihx  temp_prob_11f04e.ihx  temp_prob_15w204s.ihx temp_prob_15f104.ihx
 
 temp_prob.ihx:	temp_prob.rel uart.rel ds18b20.rel
 	$(CC) $^
@@ -39,9 +39,9 @@ temp_prob_15w204s.ihx: temp_prob_15w204s.rel uart_15w204s.rel ds18b20_1t.rel
 downld: temp_prob.ihx
 	stcisp -f $<
 
-temp_prob_stc15f.ihx: temp_prob_stc15f.rel uart_15f104.rel ds18b20_1t.rel
+temp_prob_15f104.ihx: temp_prob_15f104.rel uart_15f104.rel ds18b20_1t.rel
 	$(CC) $(STC15FLAGS) -o $@ $^
-	$(PACKIHX) $@ > temp_prob_stc15f.hex
+	$(PACKIHX) $@ > temp_prob_15f104.hex
 
 temp_prob.rel: temp_prob.c
 	$(CC) -c $<
@@ -63,7 +63,7 @@ uart_15w204s.rel: uart.c
 	$(CC) $(STC15W204SFLAGS) -o $@ -c $<
 
 
-temp_prob_stc15f.rel: temp_prob.c
+temp_prob_15f104.rel: temp_prob.c
 	$(CC) $(STC15FLAGS) -o $@ -c $<
 
 uart_15f104.rel: uart.c  
