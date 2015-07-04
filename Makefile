@@ -28,15 +28,15 @@ temp_prob.ihx:	temp_prob.rel uart.rel ds18b20.rel ds18b20_search.rel
 	$(CC) $^
 	$(PACKIHX) $@ > temp_prob.hex
 
-temp_prob_11f04e.ihx: temp_prob_11.rel uart_11.rel ds18b20_1t_11.rel  ds18b20_search_11.rel
+temp_prob_11f04e.ihx: temp_prob_11.rel uart_11.rel ds18b20_1t_11.rel  ds18b20_search.rel
 	$(CC) $(STC11FLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_11f04e.hex
 
-temp_prob_15w204s.ihx: temp_prob_15w204s.rel uart_15w204s.rel ds18b20_1t.rel ds18b20_search_11.rel
+temp_prob_15w204s.ihx: temp_prob_15w204s.rel uart_15w204s.rel ds18b20_1t.rel ds18b20_search.rel
 	$(CC) $(STC15W204SFLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_15w204s.hex
 
-temp_prob_15f104.ihx: temp_prob_15f104.rel uart_15f104.rel ds18b20_1t.rel ds18b20_search_11.rel
+temp_prob_15f104.ihx: temp_prob_15f104.rel uart_15f104.rel ds18b20_1t.rel ds18b20_search.rel
 	$(CC) $(STC15FLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_15f104.hex
 
