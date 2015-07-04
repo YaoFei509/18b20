@@ -45,7 +45,6 @@ void init_uart()
 	TL1   = 0xFD;  // 9600 
 	TR1   = 1;
 #endif
-	IE   |= 0x90;  // enable serial interrupt 
 
 #endif // __SOFT_UART
 	
