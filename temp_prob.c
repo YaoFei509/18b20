@@ -43,7 +43,6 @@
 
 #include "uart.h"
 #include "ds18b20.h"
-
 #include "ds18b20_search.h"
 
 typedef unsigned char uchar;
@@ -101,25 +100,6 @@ void timer0() __interrupt 1 __using 2
 #endif
 }
 
-// -------------------------------------------------
-
-#ifndef STC15F104
-// UART interrupt handler
-void serial() __interrupt 4 __using 3
-{
-	uchar c;
-	
-	if (RI) {
-		c = SBUF;
-		RI = 0;
-
-		if ( 't' == c ) 
-			flag = 0x55;
-		else
-			flag = 0;
-	} 
-}
-#endif
 
 /*
  * 主程序
@@ -211,4 +191,3 @@ int main()
 		}
 	}
 }
-
