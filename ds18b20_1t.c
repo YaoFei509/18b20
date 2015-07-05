@@ -102,7 +102,14 @@ BYTE DS18B20_ReadByte()
 
     for (i=0; i<8; i++) {           //8位计数器
         dat >>= 1;
-        DQ = 0;                     //开始时间片
+
+#if 1
+	if (DS18B20_ReadBit()) {
+		dat |= 0x80;
+	}
+#else	
+
+	DQ = 0;                     //开始时间片
         DelayXus(1);                //延时等待
         DQ = 1;                     //准备接收
         DelayXus(1);                //接收延时
@@ -110,10 +117,47 @@ BYTE DS18B20_ReadByte()
 		dat |= 0x80;        //读取数据
 	}
         DelayXus(US60);               //等待时间片结束
+#endif
     }
 
     return dat;
 }
+
+
+// 读一位
+__bit DS18B20_ReadBit()
+{
+	__bit result;
+
+	DQ = 0;            //开始时间片
+
+#ifdef STC11F04E
+	__nop__;           //延时等待
+	__nop__;
+	__nop__;
+	__nop__;
+#else
+	DelayXus(10);
+#endif
+
+        DQ = 1;                     //准备接收
+#ifdef STC11F04E
+	__nop__;           //延时等待
+	__nop__;
+	__nop__;
+	__nop__;
+#else
+	DelayXus(10);
+#endif
+	
+	result = DQ;
+
+	DelayXus(US60);               //等待时间片结束
+
+        return result;
+}
+
+
 
 /**************************************
 向DS18B20写1字节数据
@@ -157,31 +201,4 @@ BYTE DS18B20_ReadRom(BYTE *rom)
 	}
 	return 0;
 }
-
-// 读一位
-__bit DS18B20_ReadBit()
-{
-	__bit result;
-
-	DQ = 0;            //开始时间片
-
-	__nop__;           //延时等待
-	__nop__;
-	__nop__;
-	__nop__;
-	
-        DQ = 1;                     //准备接收
-
-	__nop__;           //延时等待
-	__nop__;
-	__nop__;
-	__nop__;
-
-	result = DQ;
-
-	DelayXus(US60);               //等待时间片结束
-
-        return result;
-}
-
 
