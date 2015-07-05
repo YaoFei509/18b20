@@ -119,6 +119,9 @@ int main()
 		putchar('S');
 	}
 
+	// 忽略掉上电时第一个假的测温值85度
+	StartDS18B20();
+
 	// 初始化定时器
 	init_timer0();
 	
