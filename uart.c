@@ -66,10 +66,12 @@ void putchar(char c)
 
 #define	P_TXD P3_1   /*定义模拟串口发送端,可以是任意IO*/
 
+// for STC15F104E  use  *104
+// for STC15F104W  use  *75
 void	BitTime(void)
 {
 	unsigned int  i;
-	i = ((FOSC/ 100) * 104) / 130000L - 1; //根据主时钟来计算位时间
+	i = ((FOSC/ 100) * 75) / 130000L - 1; //根据主时钟来计算位时间
 	while(--i);
 }
 
