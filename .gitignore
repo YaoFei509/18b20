@@ -6,4 +6,8 @@
 *.rel
 *.rst
 *.sym
+*.hex
+*.ihx
+*.asm
+*.lk
 ChangeLog
