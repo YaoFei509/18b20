@@ -1,0 +1,19 @@
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+rfcomm bind 0 20:15:05:18:76:22
+sudo -iu yaofei screen -dmS cewen_bt bash -c ' /home/yaofei/temp/cewen_bt.sh ; exec bash '
+
+sudo -iu yaofei screen -dmS cewen bash -c ' /home/yaofei/temp/cewen.sh; exec bash '
+
+exit 0
