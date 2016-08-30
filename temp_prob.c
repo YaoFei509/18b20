@@ -73,7 +73,7 @@ void init_timer0()
 	TMOD = 0;  // Timer0 for 100Hz
 		   // Mode 0, 16bit auto load
 #endif
-	TL0 = T0MS & 255;
+	TL0 = (BYTE)T0MS; // & 255;
 	TH0 = T0MS>>8;
 	TR0   = 1;
 	ET0   = 1;
@@ -84,7 +84,7 @@ uchar times = 0;
 void timer0() __interrupt 1 __using 2
 {
 #ifdef STC11F04E  // 标准8051不能自动装载
-	TL0 = T0MS & 255;
+	TL0 = (BYTE)(T0MS & 255);
 	TH0 = T0MS>>8;
 #endif
 	times++;
@@ -146,13 +146,13 @@ int main()
 					h = (TPH<<4) + ((TPL>>4) & 0x0f);
 					
 					// 用查表算法，省略*0.0625运算
-					if (h<0) 
+					if (h > 127) 
 						l = digis[16 - (TPL&0xf)];
 					else
 						l = digis[TPL&0xf];
 					
 					// 正负号
-					if (h<0) {
+					if (h > 127 ) {
 						putchar('-');
 						h = -h;
 					}
