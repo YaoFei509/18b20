@@ -5,9 +5,9 @@
 #
 
 #for Fedora use 
-#REFIX=sdcc-
+PREFIX=sdcc-
 
-PREFIX=
+#PREFIX=
 
 #
 CC=$(PREFIX)sdcc
@@ -16,7 +16,7 @@ PACKIHX=$(PREFIX)packihx
 # for STC11F04E
 STC11FLAGS = -DSTC11F04E=1
 
-# for STC15F104E
+# for STC15F104E or STC15F104W
 STC15FLAGS =  -DSTC15F104=1 --iram-size 128 --no-xinit-opt 
 
 #for STC15W204S
