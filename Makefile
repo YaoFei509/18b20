@@ -40,6 +40,8 @@ temp_prob_15f104.ihx: temp_prob_15f104.rel uart_15f104.rel ds18b20_1t.rel ds18b2
 	$(CC) $(STC15FLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_15f104.hex
 
+downld: temp_prob_15f104.ihx
+	stcgal $<
 
 #temp_prob
 temp_prob.rel: temp_prob.c
