@@ -1,6 +1,8 @@
 #define BAUD  9600
 #ifdef STC15F104
 #define __SOFT_UART 1
+// 中断处理函数
+void timer0_handler() __interrupt 1 __using 2;
 #endif
 
 #ifdef STC11F04E
@@ -13,7 +15,9 @@
 
 void init_uart();
 void putchar(char);
+char getchar();
 
 void print_num(unsigned char dat);
 // 打印16进制数据
 void print_hex(char data);
+
