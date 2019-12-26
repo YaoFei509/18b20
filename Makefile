@@ -40,8 +40,9 @@ temp_prob_15f104.ihx: temp_prob_15f104.rel uart_15f104.rel ds18b20_1t.rel ds18b2
 	$(CC) $(STC15FLAGS) -o $@ $^
 	$(PACKIHX) $@ > temp_prob_15f104.hex
 
+# STC15F104 only work at 1200bps
 downld: temp_prob_15f104.ihx
-	stcgal $<
+	stcgal -b 1200 $<
 
 #temp_prob
 temp_prob.rel: temp_prob.c
