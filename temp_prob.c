@@ -175,8 +175,8 @@ int main()
 					// 打印此时的定时器时间，估算运行时间
 					print_num(times);
 					
-					putchar('\n');
 					putchar('\r');
+					putchar('\n');
 					
 				} // for i<num
 			}
