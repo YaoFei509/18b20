@@ -111,6 +111,13 @@ char getchar()
 
 #endif
 
+//打印字符串
+void puts(char *str)
+{
+	while (*str != 0) 
+		putchar(*str++);
+}
+
 // 打印十进制数字
 void print_num(unsigned char dat)
 {

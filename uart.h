@@ -17,6 +17,9 @@ void init_uart();
 void putchar(char);
 char getchar();
 
+// 打印字符串
+void puts(char *str);
+
 void print_num(unsigned char dat);
 // 打印16进制数据
 void print_hex(char data);
