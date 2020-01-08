@@ -124,18 +124,19 @@ int main()
 	Disp_Temp(num);
 	
 	while(1) {
+		puts("Press R/N/T:");
 		if (cmd = getchar()) {
 			switch (cmd) {
 			case 'R':
 			case 'r': // reset
 				StartDS18B20();
+				puts("\r\n");
 				break;
 
 			case 'n':
 			case 'N': // get number of 18B20
 				print_num(num);
-				putchar('\r');
-				putchar('\n');
+				puts("\r\n");
 				break;
 				
 			case 'T':
@@ -144,6 +145,7 @@ int main()
 				break;
 
 			default:
+				puts("Unknown.\r\n");
 				break;
 			}
 		} //if (cmd
