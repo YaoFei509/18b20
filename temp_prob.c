@@ -61,7 +61,7 @@ char const __code digis[16]= {0, 6, 13, 19,
 // 采集到的温度
 char TPH, TPL;
 
-void Disp_Temp(int num)
+void Disp_Temp(char num)
 {
 	char h, l, i;
 	
