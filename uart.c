@@ -96,18 +96,24 @@ void putchar(char  dat)
 // 打印十进制数字
 void print_num(unsigned char dat)
 {
-	char i;
+	char i=0, j=0;
 
-	if (dat > 100) {
-		i = dat / 100;
-		dat %=100;
-		putchar('0'+i);
+	while (dat > 99) {
+		dat -= 100; 
+		i++;
 	}
-
-	i = dat/10;
-	dat %= 10;
-
-	putchar('0'+i);
+	
+	while (dat > 9) {
+		dat -= 10;
+		j++;
+	}
+	
+	if (i>0) {
+		putchar('0'+i);
+		putchar('0'+j);
+	} else if (j>0) {
+		putchar('0'+j);
+	}
 	putchar('0'+dat);
 }
 
